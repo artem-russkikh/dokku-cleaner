@@ -1,0 +1,39 @@
+#!/bin/bash
+set -e; 
+
+# Check if name is specified
+if [[ $1 == cleaner:* ]]; then
+    if [[ -z $2 ]]; then
+        echo "You must specify an app name"
+        exit 1
+    else
+        APP="$2"
+        # Check if app exists with the same name
+        if [[ -d "$DOKKU_ROOT/$APP" ]]; then
+            APP_EXISTS=true
+        else
+            APP_EXISTS=false
+        fi
+    fi
+fi
+
+case "$1" in
+
+  cleaner:enable)
+    echo "ACTIVE" > "$DOKKU_ROOT/$APP/DEPLOY_CLEANER"
+    echo "-----> Clean after deployment enabled for $2"
+    ;;
+
+  cleaner:disable)
+    echo "-----> Clean after deployment disabled for $2"
+    rm "$DOKKU_ROOT/$APP/DEPLOY_CLEANER"
+   ;;
+
+  help)
+    cat && cat<<EOF
+    cleaner:enable   <app>     Enable deployments of cleaner container
+    cleaner:disable <app>     Disable deployment of cleaner container
+EOF
+    ;;
+
+esac

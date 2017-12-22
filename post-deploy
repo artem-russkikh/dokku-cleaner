@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -eo pipefail
+APP="$1"; PORT="$2"
+
+if [[ -f "$DOKKU_ROOT/$APP/DEPLOY_CLEANER" ]]; then
+
+  echo "-----> Cleaning..."
+
+  echo "-----> list of running processes:"
+  echo "$(docker ps -q --format={{.Names}} | grep -P '\.\d{10,}$')"
+
+  docker ps -q --format={{.Names}} | grep -P '\.\d{10,}$' | xargs docker rm -f
+
+  echo "-----> Cleaned"
+fi
