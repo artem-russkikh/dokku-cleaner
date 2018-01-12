@@ -9,7 +9,11 @@ if [[ -f "$DOKKU_ROOT/$APP/DEPLOY_CLEANER" ]]; then
   echo "-----> list of running processes:"
   echo "$(docker ps -q --format={{.Names}} | grep -P '\.\d{10,}$')"
 
-  docker ps -q --format={{.Names}} | grep -P '\.\d{10,}$' | xargs docker rm -f
+  if [[ $(docker ps -q --format={{.Names}} | grep -P '\.\d{10,}$') ]]; then
+    docker ps -q --format={{.Names}} | grep -P '\.\d{10,}$' | xargs docker rm -f
+  else
+    echo "no running processes"
+  fi
 
   echo "-----> Cleaned"
 fi
