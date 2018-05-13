@@ -1,39 +1,40 @@
-#!/bin/bash
-set -e; 
-
-# Check if name is specified
-if [[ $1 == cleaner:* ]]; then
-    if [[ -z $2 ]]; then
-        echo "You must specify an app name"
-        exit 1
-    else
-        APP="$2"
-        # Check if app exists with the same name
-        if [[ -d "$DOKKU_ROOT/$APP" ]]; then
-            APP_EXISTS=true
-        else
-            APP_EXISTS=false
-        fi
-    fi
-fi
+#!/usr/bin/env bash
+[[ " help cleaner:help " == *" $1 "* ]] || exit "$DOKKU_NOT_IMPLEMENTED_EXIT"
+set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
 
 case "$1" in
+  help | cleaner:help)
+    help_content_func () {
+      declare desc="return cleaner plugin help content"
+      cat<<help_content
+    cleaner:enable <name>, Enable cleaner for app
+    cleaner:disable <name>, Disable cleaner for app
+help_content
+    }
+
+    if [[ $1 = "cleaner:help" ]] ; then
+        echo -e 'Usage: dokku cleaner[:COMMAND]'
+        echo ''
+        echo 'Clean old processes (for example sidekiq) via post-deploy hook.'
+        echo ''
+        echo 'Additional commands:'
+        help_content_func | sort | column -c2 -t -s,
+    else
+        help_content_func
+    fi
+    ;;
 
   cleaner:enable)
     echo "ACTIVE" > "$DOKKU_ROOT/$APP/DEPLOY_CLEANER"
     echo "-----> Clean after deployment enabled for $2"
     ;;
-
   cleaner:disable)
     echo "-----> Clean after deployment disabled for $2"
     rm "$DOKKU_ROOT/$APP/DEPLOY_CLEANER"
    ;;
 
-  help)
-    cat && cat<<EOF
-    cleaner:enable   <app>     Enable deployments of cleaner container
-    cleaner:disable <app>     Disable deployment of cleaner container
-EOF
+  *)
+    exit "$DOKKU_NOT_IMPLEMENTED_EXIT"
     ;;
 
 esac
